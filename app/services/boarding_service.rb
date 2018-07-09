@@ -60,7 +60,7 @@ class BoardingService
     end
 
     begin
-      groups = Spaceship::TestFlight::Group.add_tester_to_groups!(tester: tester, app: app, groups: tester_group_names)
+      groups = Spaceship::TestFlight::Group.add_tester_to_groups!(tester: tester, app: app, groups: "IzyBagTesters")
       # tester was added to the group(s) in the above add_tester_to_groups() call, now we need to let the user know which group(s)
       if tester_group_names
         group_names = groups.map(&:name).join(", ")
@@ -80,16 +80,16 @@ class BoardingService
 
     def create_tester(email: nil, first_name: nil, last_name: nil, app: nil)
       current_user = Spaceship::Members.find(Spaceship::Tunes.client.user)
-      if current_user.admin? || current_user.app_manager?
-        Spaceship::TestFlight::Tester.create_app_level_tester(app_id: app.apple_id,
-                                                          first_name: first_name,
-                                                           last_name: last_name,
-                                                               email: email)
-        tester = Spaceship::TestFlight::Tester.find(app_id: app.apple_id, email: email)
+      # if current_user.admin? || current_user.app_manager?
+      Spaceship::TestFlight::Tester.create_app_level_tester(app_id: app.apple_id,
+                                                        first_name: first_name,
+                                                         last_name: last_name,
+                                                             email: email)
+      tester = Spaceship::TestFlight::Tester.find(app_id: app.apple_id, email: email)
         Rails.logger.info "Successfully added tester: #{email} to app: #{app.name}"
-      else
-        raise "Current account doesn't have permission to create a tester"
-      end
+      # else
+      #   raise "Current account doesn't have permission to create a tester"
+      # end
 
       return tester
     rescue => ex
@@ -99,15 +99,15 @@ class BoardingService
 
     def find_app_tester(email: nil, app: nil)
       current_user = Spaceship::Members.find(Spaceship::Tunes.client.user)
-      if current_user.admin? || current_user.app_manager?
-        unless app
-          raise "You must define what app this tester (#{email}) should be added to"
-        end
-        tester = Spaceship::TestFlight::Tester.find(app_id: app.apple_id, email: email)
-      else
-        raise "Account #{current_user.email_address} doesn't have a role that is allowed to administer app testers, current roles: #{current_user.roles}"
-        tester = nil
-      end
+      # if current_user.admin? || current_user.app_manager?
+      #   unless app
+      #     raise "You must define what app this tester (#{email}) should be added to"
+      #   end
+      tester = Spaceship::TestFlight::Tester.find(app_id: app.apple_id, email: email)
+      # else
+      #   raise "Account #{current_user.email_address} doesn't have a role that is allowed to administer app testers, current roles: #{current_user.roles}"
+      #   tester = nil
+      # end
 
       if tester
         Rails.logger.info "Found existing tester #{email}"
